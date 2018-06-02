@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>轮播图</title>
+    <style>
+        *{
+            padding: 0;
+            margin: 0;
+            list-style: none;
+        }
+        .wrapper{
+            position: relative;
+            margin: 100px auto 0 ;
+            width: 400px;
+            height: 300px;
+            overflow: hidden;
+        }
+        .wrapper .sliderPage {
+            position: absolute;
+            top:0;
+            left: 0;
+            height: 300px;
+            width: 2000px;
+        }
+        .wrapper .sliderPage li{
+            width: 400px;
+            height: 300px;
+            float: left;
+        }
+        .wrapper .btn{
+            position: absolute;
+            top:50%;
+            margin-top: -20px;
+            opacity: 0.3;
+            width: 40px;
+            height: 40px;
+            color: #fff;
+            background-color: black;
+            text-align: center;
+            line-height: 40px;
+            cursor: pointer;
+        }
+        .wrapper .btn:hover{
+            opacity: 0.7;
+        }
+        .wrapper .leftBtn{
+           left: 15px;
+        }
+        .wrapper .rightBtn{
+            right: 15px;
+        }
+        .wrapper .sliderIndex{
+            position: absolute;
+            width: 100%;
+            bottom: 15px;
+            text-align: center;
+            cursor: pointer;
+        }
+        .wrapper .sliderIndex span{
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: #ccc;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .wrapper .sliderIndex .active{
+            background-color: #f40;
+        }
+    </style>
+</head>
+<body>
+    <!--轮播图可视窗口-->
+    <div class="wrapper">
+        <!--移动ul使不同的li图片被显示出来-->
+        <ul class="sliderPage">
+            <li><img src="./img/1.jpg"></li>
+            <li><img src="./img/2.jpg"></li>
+            <li><img src="./img/3.jpg"></li>
+            <li><img src="./img/4.jpg"></li>
+            <li><img src="./img/1.jpg"></li>
+        </ul>
+        <div class="btn leftBtn">&lt;</div>
+        <div class="btn rightBtn">&gt;</div>
+        <div class="sliderIndex">
+            <span class="active"></span>
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </div>
+    <script src="move.js"></script>
+    <script>
+        var timer = null;
+        var sliderPage=document.getElementsByClassName('sliderPage')[0];
+        var moveWidth = sliderPage.children[0].offsetWidth//移动的距离
+        var direction ;
+        var num =sliderPage.children.length - 1;
+        var leftBtn = document.getElementsByClassName('leftBtn')[0];
+        var rightBtn = document.getElementsByClassName('rightBtn')[0];
+        var lock = true;
+        var index = 0;
+        var oSpan = document.getElementsByClassName('sliderIndex')[0].getElementsByTagName('span');
+
+        leftBtn.onclick = function () {
+            autoMove('right->left');
+        }
+        rightBtn.onclick = function () {
+            autoMove('left->right');
+        }
+        for(var i = 0;i <oSpan.length;i++){
+            (function (myIndex) {
+                oSpan[myIndex].onclick = function (ev) {
+                    lock = false;
+                    clearTimeout(timer);
+                    index = myIndex;
+                   startMove(sliderPage,{left:-index * moveWidth},function () {
+                       lock = true;
+                       timer = clearTimeout(autoMove,1500);
+                       changeIndex(index);
+                   })
+                }
+            })(i)
+        }
+
+        function autoMove(direction) {
+            if(lock){
+                lock = false;
+                clearTimeout(timer);//解决定时器争抢问题
+                if(!direction || direction =="left->right"){
+                    index ++;
+                    startMove(sliderPage,{left:sliderPage.offsetLeft - moveWidth},function () {
+                        if(sliderPage.offsetLeft == - num * moveWidth ){
+                            index = 0;
+                            sliderPage.style.left = 0 + 'px';
+                        }
+                        changeIndex(index);
+                        timer = setTimeout(autoMove,1500);
+                        lock = true;
+
+                    })
+                }else if(direction == 'right->left'){
+                    if(sliderPage.offsetLeft == 0){
+                        index =  num ;
+                        sliderPage.style.left =-num * moveWidth + 'px';
+                    }
+                    index--;
+                    startMove(sliderPage,{left:sliderPage.offsetLeft + moveWidth},function () {
+                        timer = setTimeout(autoMove,1500);
+                        lock =true;
+                        changeIndex(index);
+                    })
+                }
+            }
+
+        }
+
+        function changeIndex(_index) {
+            for(var i =0 ;i < oSpan.length;i++){
+                oSpan[i].className = '';
+            }
+           oSpan[_index].className='active';
+        }
+
+        timer = setTimeout(autoMove,1500);
+        //获得对象属性的样式
+        function getStyle(obj,attr) {
+            if(obj.currentStyle){
+                return obj.currentStyle[attr];
+            }else{
+                return window.getComputedStyle(obj,false)[attr];
+            }
+        }
+
+    </script>
+
+</body>
+</html>
